@@ -149,13 +149,7 @@ public class Board {
         Queue<Board> neighbors = new Queue<>();
         //To find all of the neighbors, we perform the following:
         //1-Find the index of 0
-        int zeroIndex = size;
-        for (int i = 0; i < size; i++) {
-            if (board[i] == 0) {
-                zeroIndex = i;
-                break;
-            }
-        }
+        int zeroIndex = findzero(board);
         assert zeroIndex < size && zeroIndex >= 0;
         int leftIndex = zeroIndex - 1;
         int rightIndex = zeroIndex + 1;
@@ -246,6 +240,15 @@ public class Board {
         }
         return neighbors;
     }     // all neighboring boards
+
+    private int findzero(int[] board) {
+        for (int i = 0; i < size; i++) {
+            if (board[i] == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     private static int[][] oneDtoTwoD(int[] board, int boardDimension) {
         int[][] temp = new int[boardDimension][boardDimension];
