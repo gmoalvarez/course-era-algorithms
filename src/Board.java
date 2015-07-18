@@ -1,5 +1,4 @@
-
-
+import java.util.Iterator;
 
 public class Board {
     private int[] board;
@@ -106,29 +105,158 @@ public class Board {
             }
         }
         if (board[0] == 0) {
-            swap(board2D, 0, 1,0,2);
+            swap2D(board2D, 0, 1, 0, 2);
         } else if (board[1] == 0) {
-            swap(board2D, 0, 0, 0, 2);
+            swap2D(board2D, 0, 0, 0, 2);
         } else {
-            swap(board2D, 0, 0, 0, 1);
+            swap2D(board2D, 0, 0, 0, 1);
         }
         return new Board(board2D);
     }
 
-    private void swap(int[][] board2D, int i, int j,int r,int s) {
+    private void swap2D(int[][] board2D, int i, int j, int r, int s) {
         int temp = board2D[r][s];
         board2D[r][s] = board2D[i][j];
         board2D[i][j] = temp;
     }
 
+    private void swap(int[] board, int i, int j) {
+        int temp = board[j];
+        board[j] = board[i];
+        board[i] = temp;
+    }
 
     public boolean equals(Object y) {
-        return false;
+        if (y == this) return true;
+
+        if (y == null) return false;
+
+        if (y.getClass() != this.getClass())
+            return false;
+        return areBoardsEqual(y);
     }        // does this board equal y?
 
+    private boolean areBoardsEqual(Object y) {
+        Board that = (Board) y;
+        for (int i = 0; i < size; i++) {
+            if (this.board[i] != that.board[i])
+                return false;
+        }
+        return true;
+    }
+
     public Iterable<Board> neighbors() {
-        return null;
+        Queue<Board> neighbors = new Queue<>();
+        //To find all of the neighbors, we perform the following:
+        //1-Find the index of 0
+        int zeroIndex = size;
+        for (int i = 0; i < size; i++) {
+            if (board[i] == 0) {
+                zeroIndex = i;
+                break;
+            }
+        }
+        assert zeroIndex < size && zeroIndex >= 0;
+        int leftIndex = zeroIndex - 1;
+        int rightIndex = zeroIndex + 1;
+        int aboveIndex = zeroIndex - boardDimension;
+        int belowIndex = zeroIndex + boardDimension;
+        int[][] tempBlocks;
+        //2-If 0 is in the top middle, we swap with left,right,down, and add these to neighbors
+        //3-If 0 is in the top left, we swap with right,down, and add these to neighbors
+        //4-If 0 is in the top right, we swap with left,down, and add these to neighbors
+        if (zeroIndex < boardDimension) {//Top
+            swap(board, zeroIndex, belowIndex);
+            //create new 2D array with new neighbor
+            tempBlocks = oneDtoTwoD(board, boardDimension);
+            //create new Board made out of neighbor
+            //enque neighbor
+            neighbors.enqueue(new Board(tempBlocks));
+            swap(board, zeroIndex, belowIndex);
+            if (zeroIndex == 0) {//left
+                swap(board, zeroIndex, rightIndex);
+                tempBlocks = oneDtoTwoD(board, boardDimension);
+                neighbors.enqueue(new Board(tempBlocks));
+                swap(board, zeroIndex, rightIndex);
+            } else if (zeroIndex == boardDimension - 1) {//right
+                //swap left
+                swap(board, zeroIndex, leftIndex);
+                tempBlocks = oneDtoTwoD(board, boardDimension);
+                neighbors.enqueue(new Board(tempBlocks));
+                swap(board, zeroIndex, leftIndex);
+            } else {//middle
+                swap(board, zeroIndex, rightIndex);
+                tempBlocks = oneDtoTwoD(board, boardDimension);
+                neighbors.enqueue(new Board(tempBlocks));
+                swap(board, zeroIndex, rightIndex);
+                swap(board, zeroIndex, leftIndex);
+                tempBlocks = oneDtoTwoD(board, boardDimension);
+                neighbors.enqueue(new Board(tempBlocks));
+                swap(board, zeroIndex, leftIndex);
+            }
+        }
+        //5-If 0 is in the bottom middle, we wap with left,right,up, and add these to neighbors
+        //6-If 0 is in the bottom left,we swap with right,up, and add these to neighbors
+        //7-If 0 is in the bottom right, we swap with left,up, and add these to neighbors
+        else if (zeroIndex > size - boardDimension - 1) {//Bottom
+            swap(board, zeroIndex, aboveIndex);
+            tempBlocks = oneDtoTwoD(board, boardDimension);
+            neighbors.enqueue(new Board(tempBlocks));
+            swap(board, zeroIndex, aboveIndex);
+            if (zeroIndex == size - boardDimension) {//left
+                swap(board, zeroIndex, rightIndex);
+                tempBlocks = oneDtoTwoD(board, boardDimension);
+                neighbors.enqueue(new Board(tempBlocks));
+                swap(board, zeroIndex, rightIndex);
+            }else if (zeroIndex == size - 1) {//right
+                swap(board, zeroIndex, leftIndex);
+                tempBlocks = oneDtoTwoD(board, boardDimension);
+                neighbors.enqueue(new Board(tempBlocks));
+                swap(board, zeroIndex, leftIndex);
+            } else {//middle
+                swap(board, zeroIndex, leftIndex);
+                tempBlocks = oneDtoTwoD(board, boardDimension);
+                neighbors.enqueue(new Board(tempBlocks));
+                swap(board, zeroIndex, leftIndex);
+                swap(board, zeroIndex, rightIndex);
+                tempBlocks = oneDtoTwoD(board, boardDimension);
+                neighbors.enqueue(new Board(tempBlocks));
+                swap(board, zeroIndex, rightIndex);
+            }
+        }//8-If 0 is in the middle area, we swap with left,right,up,down, and add these to neighbors
+        //9-If 0 is in the middle left, we swap with right,up,down, and add these to neighbors
+        //10-If 0 is in the middle right, we swap with left,up,down, and add these to neighbors
+        else {//Middle
+            swap(board, zeroIndex, leftIndex);
+            tempBlocks = oneDtoTwoD(board, boardDimension);
+            neighbors.enqueue(new Board(tempBlocks));
+            swap(board, zeroIndex, leftIndex);
+            swap(board, zeroIndex, rightIndex);
+            tempBlocks = oneDtoTwoD(board, boardDimension);
+            neighbors.enqueue(new Board(tempBlocks));
+            swap(board, zeroIndex, rightIndex);
+            swap(board, zeroIndex, aboveIndex);
+            tempBlocks = oneDtoTwoD(board, boardDimension);
+            neighbors.enqueue(new Board(tempBlocks));
+            swap(board, zeroIndex, aboveIndex);
+            swap(board, zeroIndex, belowIndex);
+            tempBlocks = oneDtoTwoD(board, boardDimension);
+            neighbors.enqueue(new Board(tempBlocks));
+            swap(board, zeroIndex, belowIndex);
+        }
+        return neighbors;
     }     // all neighboring boards
+
+    private static int[][] oneDtoTwoD(int[] board, int boardDimension) {
+        int[][] temp = new int[boardDimension][boardDimension];
+        int idx = 0;
+        for (int i = 0; i < boardDimension; i++) {
+            for (int j = 0; j < boardDimension; j++) {
+                temp[i][j] = board[idx++];
+            }
+        }
+        return temp;
+    }
 
     public String toString() {
         StringBuilder s = new StringBuilder();
@@ -164,11 +292,48 @@ public class Board {
                 {4, 0, 2},
                 {7, 6, 5}
         };
-        Board initial = new Board(blocks);
 
-        //Print board and goalBoard
-        System.out.println(initial);
-        System.out.println("The hamming distance is: " + initial.hamming());
-        System.out.println("The Manhattan distance is: " + initial.manhattan());
+        int[][] blocks2 = new int[][]{
+                {0, 1, 3},
+                {4, 2, 5},
+                {7, 8, 6}
+        };
+
+        Board board1 = new Board(blocks);
+        Board board2 = new Board(blocks2);
+
+        //Print board1 and goalBoard
+        System.out.println(board1);
+        System.out.println("board1 is: "+board1);
+        System.out.println("The hamming distance of board1 is: " + board1.hamming());
+        System.out.println("The Manhattan distance is: " + board1.manhattan());
+
+        System.out.println(board2);
+        System.out.println("board2 is: "+board2);
+        System.out.println("The hamming distance of board2 is: " + board2.hamming());
+        System.out.println("The Manhattan distance of board2 is: " + board2.manhattan());
+
+        //Test twin()
+        System.out.println("The twin of board1 is:\n " + board1.twin());
+        System.out.println("The twin of board2 is:\n" + board2.twin());
+
+        //Test equals
+        System.out.println("Are these boards equal? (Should be true): " + board1.equals(board1));
+        System.out.println("Are these boards equal? (Should be false): " + board1.equals(board2));
+
+        //Test iterator for neighbors
+        System.out.println("This should print all neighbors of board1");
+        Iterable<Board> neighborsB1 = board1.neighbors();
+        for (Board neighbor : neighborsB1) {
+            System.out.println(neighbor);
+        }
+
+        System.out.println("This should print all neighbors of board2");
+        Iterable<Board> neighbors = board2.neighbors();
+        for (Board neighbor : neighbors) {
+            System.out.println(neighbor);
+        }
+
     } // unit tests (not graded)
+
 }
