@@ -133,12 +133,6 @@ public class Board {
         board2D[i][j] = temp;
     }
 
-    private void swap(int[] board, int i, int j) {
-        int temp = board[j];
-        board[j] = board[i];
-        board[i] = temp;
-    }
-
     public boolean equals(Object y) {
         if (y == this) return true;
 
@@ -146,8 +140,19 @@ public class Board {
 
         if (y.getClass() != this.getClass())
             return false;
+        Board that = (Board) y;
+        if (!dimensionsEqual(that))
+            return false;
         return areBoardsEqual(y);
     }        // does this board equal y?
+
+    private boolean dimensionsEqual(Board that) {
+        for (int i = 0; i < that.board.length; i++) {
+            if(this.board[i].length != that.board[i].length)
+                return false;
+        }
+        return true;
+    }
 
     private boolean areBoardsEqual(Object y) {
         Board that = (Board) y;
