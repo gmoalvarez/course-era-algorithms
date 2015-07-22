@@ -8,6 +8,7 @@ public class Board {
 
 
     public Board(int[][] blocks) {
+        if(blocks==null) throw new NullPointerException("blocks cannot be null");
         checkBlocksIsSquare(blocks);
         buildBoards(blocks);
     }           // construct a board from an N-by-N array of blocks
@@ -25,6 +26,7 @@ public class Board {
             }
             boardIndex += boardDimension;
         }
+        goalBoard[size - 1] = 0;
     }
 
     private void checkBlocksIsSquare(int[][] blocks) {
@@ -56,18 +58,13 @@ public class Board {
     }
 
     public int manhattan() {
-        return manhattanDistance();
-    }                 // sum of Manhattan distances between blocks and goal
-
-    private int manhattanDistance() {
         int sumDistance = 0;
         for (int i = 0; i < size; i++) {
             if (board[i] != goalBoard[i] && board[i] != 0) {
                 sumDistance += currentManhattanDistance(i);
             }
         }
-        return sumDistance;
-    }
+        return sumDistance;    }                 // sum of Manhattan distances between blocks and goal
 
     private int currentManhattanDistance(int i) {
         int desiredIdx = board[i] - 1;
@@ -104,12 +101,13 @@ public class Board {
                 board2D[i][j] = board[counter++];
             }
         }
-        if (board[0] == 0) {
-            swap2D(board2D, 0, 1, 0, 2);
-        } else if (board[1] == 0) {
-            swap2D(board2D, 0, 0, 0, 2);
-        } else {
-            swap2D(board2D, 0, 0, 0, 1);
+        //find zero index
+        int zeroIndex = findzero(board);
+        //If zero is in the first row, swap two first two in second row
+        if (zeroIndex < boardDimension) {
+            swap2D(board2D, 1, 0, 1, 1);
+        } else {        //else, swap two adjacent in first row
+            swap2D(board2D,0,0,0,1);
         }
         return new Board(board2D);
     }
@@ -265,7 +263,6 @@ public class Board {
         StringBuilder s = new StringBuilder();
         String dimensionString = boardDimension + "\n";
         s.append(dimensionString);
-        int size = boardDimension * boardDimension;
         int boardIndex = 0;
         for (int i = 0; i < boardDimension; i++) {
             for (int j = 0; j < boardDimension; j++) {
@@ -301,9 +298,28 @@ public class Board {
                 {4, 2, 5},
                 {7, 8, 6}
         };
+        int[][] blocks3 = new int[][]{
+                {1, 0},
+                {2, 3},
+        };
+        int[][] blocks4 = new int[][]{
+                {1,2,3,4},
+                {5,6,7,8},
+                {9,10,11,12},
+                {13,15,14,0},
+        };//unsolvable
 
+        int[][] blocks5 = new int[][]{
+                {5, 8, 7},
+                {1, 4, 6},
+                {3, 0, 2}
+        };
         Board board1 = new Board(blocks);
         Board board2 = new Board(blocks2);
+        Board board3 = new Board(blocks3);
+        Board board4 = new Board(blocks4);
+        Board board5 = new Board(blocks5);
+
 
         //Print board1 and goalBoard
         System.out.println(board1);
@@ -316,13 +332,31 @@ public class Board {
         System.out.println("The hamming distance of board2 is: " + board2.hamming());
         System.out.println("The Manhattan distance of board2 is: " + board2.manhattan());
 
+        System.out.println(board3);
+        System.out.println("board2 is: "+board3);
+        System.out.println("The hamming distance of board3 is: " + board3.hamming());
+        System.out.println("The Manhattan distance of board3 is: " + board3.manhattan());
+
+        System.out.println(board4);
+        System.out.println("board1 is: "+board4);
+        System.out.println("The hamming distance of board4 is: " + board4.hamming());
+        System.out.println("The Manhattan distance is: " + board4.manhattan());
+
+        System.out.println(board5);
+        System.out.println("board1 is: "+board4);
+        System.out.println("The hamming distance of board4 is: " + board5.hamming());
+        System.out.println("The Manhattan distance is (should be 17): " + board5.manhattan());
+
         //Test twin()
         System.out.println("The twin of board1 is:\n " + board1.twin());
         System.out.println("The twin of board2 is:\n" + board2.twin());
+        System.out.println("The twin of board3 is:\n " + board3.twin());
+        System.out.println("The twin of board4 is:\n " + board4.twin());
 
         //Test equals
-        System.out.println("Are these boards equal? (Should be true): " + board1.equals(board1));
         System.out.println("Are these boards equal? (Should be false): " + board1.equals(board2));
+        System.out.println("Are these boards equal? (Should be false): " + board2.equals(board3));
+        System.out.println("Are these boards equal? (Should be false): " + board3.equals(board4));
 
         //Test iterator for neighbors
         System.out.println("This should print all neighbors of board1");
@@ -332,8 +366,19 @@ public class Board {
         }
 
         System.out.println("This should print all neighbors of board2");
-        Iterable<Board> neighbors = board2.neighbors();
-        for (Board neighbor : neighbors) {
+        Iterable<Board> neighborsB2 = board2.neighbors();
+        for (Board neighbor : neighborsB2) {
+            System.out.println(neighbor);
+        }
+
+        System.out.println("This should print all neighbors of board3");
+        Iterable<Board> neighborsB3 = board3.neighbors();
+        for (Board neighbor : neighborsB3) {
+            System.out.println(neighbor);
+        }
+        System.out.println("This should print all neighbors of board4");
+        Iterable<Board> neighborsB4 = board4.neighbors();
+        for (Board neighbor : neighborsB4) {
             System.out.println(neighbor);
         }
 
