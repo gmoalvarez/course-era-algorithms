@@ -100,9 +100,8 @@ public class Board {
         int counter = 0;
         int[][] board2D = new int[boardDimension][boardDimension];
         for (int i = 0; i < boardDimension; i++) {
-            for (int j = 0; j < boardDimension; j++) {
-                board2D[i][j] = board[i][j];
-            }
+            int[] boardRow = board[i];
+            System.arraycopy(boardRow, 0, board2D[i], 0, boardDimension);
         }
         //find zero index
         int zeroIndex = findzero(board);
@@ -169,77 +168,29 @@ public class Board {
         int rowIndex = getRowIndex(zeroIndex);
         int colIndex = getColIndex(zeroIndex);
         assert zeroIndex < size && zeroIndex >= 0;
-//        int leftIndex = zeroIndex - 1;
-//        int rightIndex = zeroIndex + 1;
-//        int aboveIndex = zeroIndex - boardDimension;
-//        int belowIndex = zeroIndex + boardDimension;
-        //2-If 0 is in the top middle, we swap with left,right,down, and add these to neighbors
-        //3-If 0 is in the top left, we swap with right,down, and add these to neighbors
-        //4-If 0 is in the top right, we swap with left,down, and add these to neighbors
-        if (zeroIndex < boardDimension) {//Top
-            swap(this.board, rowIndex, colIndex, rowIndex + 1, colIndex);
-            //create new 2D array with new neighbor
-            //enque neighbor
-            neighbors.enqueue(new Board(this.board));
-            //swap back
-            swap(this.board, rowIndex, colIndex, rowIndex + 1, colIndex);
-            if (zeroIndex == 0) {//left
-                swap(this.board, rowIndex, colIndex, rowIndex, colIndex + 1);
-                neighbors.enqueue(new Board(board));
-                swap(this.board, rowIndex, colIndex, rowIndex, colIndex + 1);
-            } else if (zeroIndex == boardDimension - 1) {//right
-                //swap left
-                swap(this.board, rowIndex, colIndex, rowIndex, colIndex - 1);
-                neighbors.enqueue(new Board(board));
-                swap(this.board, rowIndex, colIndex, rowIndex, colIndex - 1);
-            } else {//middle
-                swap(this.board, rowIndex, colIndex, rowIndex, colIndex + 1);
-                neighbors.enqueue(new Board(board));
-                swap(this.board, rowIndex, colIndex, rowIndex, colIndex + 1);
-                swap(this.board, rowIndex, colIndex, rowIndex, colIndex - 1);
-                neighbors.enqueue(new Board(board));
-                swap(this.board, rowIndex, colIndex, rowIndex, colIndex - 1);
-            }
+        //swap left
+        if (colIndex > 0) {
+            swap(board, rowIndex, colIndex, rowIndex, colIndex - 1);
+            neighbors.enqueue(new Board(board));
+            swap(board, rowIndex, colIndex, rowIndex, colIndex - 1);
         }
-        //5-If 0 is in the bottom middle, we wap with left,right,up, and add these to neighbors
-        //6-If 0 is in the bottom left,we swap with right,up, and add these to neighbors
-        //7-If 0 is in the bottom right, we swap with left,up, and add these to neighbors
-        else if (zeroIndex > size - boardDimension - 1) {//Bottom
-            swap(this.board, zeroIndex, aboveIndex);
+        //swap right
+        if (colIndex < boardDimension - 1) {
+            swap(board, rowIndex, colIndex, rowIndex, colIndex + 1);
             neighbors.enqueue(new Board(board));
-            swap(this.board, zeroIndex, aboveIndex);
-            if (zeroIndex == size - boardDimension) {//left
-                swap(this.board, zeroIndex, rightIndex);
-                neighbors.enqueue(new Board(board));
-                swap(this.board, zeroIndex, rightIndex);
-            }else if (zeroIndex == size - 1) {//right
-                swap(this.board, zeroIndex, leftIndex);
-                neighbors.enqueue(new Board(board));
-                swap(this.board, zeroIndex, leftIndex);
-            } else {//middle
-                swap(this.board, zeroIndex, leftIndex);
-                neighbors.enqueue(new Board(board));
-                swap(this.board, zeroIndex, leftIndex);
-                swap(this.board, zeroIndex, rightIndex);
-                neighbors.enqueue(new Board(board));
-                swap(this.board, zeroIndex, rightIndex);
-            }
-        }//8-If 0 is in the middle area, we swap with left,right,up,down, and add these to neighbors
-        //9-If 0 is in the middle left, we swap with right,up,down, and add these to neighbors
-        //10-If 0 is in the middle right, we swap with left,up,down, and add these to neighbors
-        else {//Middle
-            swap(this.board, zeroIndex, leftIndex);
+            swap(board, rowIndex, colIndex, rowIndex, colIndex + 1);
+        }
+        //swap above
+        if (rowIndex > 0) {
+            swap(board, rowIndex, colIndex, rowIndex - 1, colIndex);
             neighbors.enqueue(new Board(board));
-            swap(this.board, zeroIndex, leftIndex);
-            swap(this.board, zeroIndex, rightIndex);
+            swap(board, rowIndex, colIndex, rowIndex - 1, colIndex);
+        }
+        //swap below
+        if (rowIndex < boardDimension - 1) {
+            swap(board, rowIndex, colIndex, rowIndex + 1, colIndex);
             neighbors.enqueue(new Board(board));
-            swap(this.board, zeroIndex, rightIndex);
-            swap(this.board, zeroIndex, aboveIndex);
-            neighbors.enqueue(new Board(board));
-            swap(this.board, zeroIndex, aboveIndex);
-            swap(this.board, zeroIndex, belowIndex);
-            neighbors.enqueue(new Board(board));
-            swap(this.board, zeroIndex, belowIndex);
+            swap(board, rowIndex, colIndex, rowIndex + 1, colIndex);
         }
         return neighbors;
     }     // all neighboring boards
@@ -252,18 +203,6 @@ public class Board {
         return zeroIndex / boardDimension;
     }
 
-
-    private static int[][] oneDtoTwoD(int[] board, int boardDimension) {
-        int[][] temp = new int[boardDimension][boardDimension];
-        int idx = 0;
-        for (int i = 0; i < boardDimension; i++) {
-            for (int j = 0; j < boardDimension; j++) {
-                temp[i][j] = board[idx++];
-            }
-        }
-        return temp;
-    }
-
     public String toString() {
         StringBuilder s = new StringBuilder();
         String dimensionString = boardDimension + "\n";
@@ -271,7 +210,7 @@ public class Board {
         int boardIndex = 0;
         for (int i = 0; i < boardDimension; i++) {
             for (int j = 0; j < boardDimension; j++) {
-                s.append(String.format("%2d ", board[boardIndex + j]));
+                s.append(String.format("%2d ", board[i][j]));
             }
             s.append("\n");
             boardIndex += boardDimension;
