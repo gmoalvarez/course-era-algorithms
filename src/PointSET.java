@@ -10,6 +10,7 @@
 public class PointSET {
     private int numOfPoints;
     private SET<Point2D> points;
+    private final double POINT_SIZE = 0.01;
 
     public         PointSET() {
         points = new SET<>();
@@ -25,24 +26,25 @@ public class PointSET {
     }                         // number of points in the set
 
     public void insert(Point2D p) {
-        if (p == null) throw new NullPointerException("Cannot insert null");
+        checkForNullArgument(p);
         if(points.contains(p)) return;
         points.add(p);
     }              // add the point to the set (if it is not already in the set)
 
     public boolean contains(Point2D p) {
-        if (p == null) throw new NullPointerException("Cannot check for null");
+        checkForNullArgument(p);
         return points.contains(p);
     }            // does the set contain point p?
 
     public void draw() {
         StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.setPenRadius(.01);
+        StdDraw.setPenRadius(POINT_SIZE);
         for (Point2D p : points)
             StdDraw.point(p.x(),p.y());
     }                         // draw all points to standard draw
 
     public Iterable<Point2D> range(RectHV rect) {
+        checkForNullArgument(rect);
         Queue<Point2D> pointList = new Queue<>();
         for (Point2D p : points)
             if (pointIsInRectangle(p, rect))
@@ -51,6 +53,8 @@ public class PointSET {
     }             // all points that are inside the rectangle
 
     private boolean pointIsInRectangle(Point2D p, RectHV rect) {
+        checkForNullArgument(p);
+        checkForNullArgument(rect);
         if (p.x() >= rect.xmin() &&
                 p.x() <= rect.xmax() &&
                 p.y() >= rect.ymin() &&
@@ -61,8 +65,33 @@ public class PointSET {
     }
 
     public Point2D nearest(Point2D p) {
-        return null;
+        checkForNullArgument(p);
+        Point2D nearestPoint = null;
+        double currentDistance;
+        double currentMinDistance = 2;
+        for (Point2D point : points) {
+            currentDistance = squareDistanceBetweenPoints(point, p);
+            if (currentDistance < currentMinDistance) {
+                nearestPoint = point;
+                currentMinDistance = currentDistance;
+            }
+        }
+        return nearestPoint;
     }             // a nearest neighbor in the set to point p; null if the set is empty
+
+    private double squareDistanceBetweenPoints(Point2D point, Point2D p) {
+        double dx = point.x() - p.x();
+        double dy = point.y() - p.y();
+        return (dx*dx + dy*dy);
+    }
+
+    private void checkForNullArgument(Point2D p) {
+        if (p == null) throw new NullPointerException("Argument cannot be null");
+    }
+
+    private void checkForNullArgument(RectHV rect) {
+        if (rect == null) throw new NullPointerException("Argument cannot be null");
+    }
 
     public static void main(String[] args) {
         int N = 20;
@@ -92,6 +121,19 @@ public class PointSET {
         for (Point2D p : drawPoints.range(rectangle))
             System.out.println(p);
         rectangle.draw();
+
+        //Find the point closest to (0.1,0.1)
+        Point2D testNearest = new Point2D(0.1, 0.1);
+        Point2D nearestPoint = drawPoints.nearest(testNearest);
+        System.out.println("Find the point closest to (0.1,0.1)");
+        System.out.println(nearestPoint);
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.setPenRadius(0.01);
+        StdDraw.point(testNearest.x(),testNearest.y());
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.setPenRadius(0.03);
+        StdDraw.point(nearestPoint.x(),nearestPoint.y());
+
     } // unit testing of the methods (optional)
 }
 
