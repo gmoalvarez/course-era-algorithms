@@ -43,8 +43,22 @@ public class PointSET {
     }                         // draw all points to standard draw
 
     public Iterable<Point2D> range(RectHV rect) {
-        return null;
+        Queue<Point2D> pointList = new Queue<>();
+        for (Point2D p : points)
+            if (pointIsInRectangle(p, rect))
+                pointList.enqueue(p);
+        return pointList;
     }             // all points that are inside the rectangle
+
+    private boolean pointIsInRectangle(Point2D p, RectHV rect) {
+        if (p.x() >= rect.xmin() &&
+                p.x() <= rect.xmax() &&
+                p.y() >= rect.ymin() &&
+                p.y() <= rect.ymax()) {
+            return true;
+        }
+        return false;
+    }
 
     public Point2D nearest(Point2D p) {
         return null;
@@ -71,6 +85,13 @@ public class PointSET {
                 + drawPoints.contains(arrayOfPoints[3]));
         System.out.println("Draw points");
         drawPoints.draw();
+
+        //Create a new rectangle and test range()
+        RectHV rectangle = new RectHV(0.1, 0.4, 0.5, 0.7);
+        System.out.println("The points in the rectangle " + rectangle + " are:");
+        for (Point2D p : drawPoints.range(rectangle))
+            System.out.println(p);
+        rectangle.draw();
     } // unit testing of the methods (optional)
 }
 
