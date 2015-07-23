@@ -8,24 +8,31 @@
  *************************************************************************/
 
 public class PointSET {
-    public         PointSET()      {
+    private int numOfPoints;
+    private SET<Point2D> points;
 
+    public         PointSET() {
+        points = new SET<>();
+        numOfPoints = 0;
     }                         // construct an empty set of points
 
     public boolean isEmpty() {
-        return false;
+        return points.isEmpty();
     }                      // is the set empty?
 
     public int size() {
-        return 0;
+        return points.size();
     }                         // number of points in the set
 
     public void insert(Point2D p) {
-
+        if (p == null) throw new NullPointerException("Cannot insert null");
+        if(points.contains(p)) return;
+        points.add(p);
     }              // add the point to the set (if it is not already in the set)
 
     public boolean contains(Point2D p) {
-        return false;
+        if (p == null) throw new NullPointerException("Cannot check for null");
+        return points.contains(p);
     }            // does the set contain point p?
 
     public void draw() {
