@@ -1,3 +1,5 @@
+import org.w3c.dom.css.Rect;
+
 import java.util.Comparator;
 
 public class KdTree {
@@ -35,29 +37,43 @@ public class KdTree {
         checkForNullArgument(p);
         if (contains(p))
             return;
-        root = insert(root, p, Orientations.compareX);
+        RectHV unitRect = new RectHV(0, 0, 1, 1);
+        root = insert(root, p, unitRect,Orientations.compareX);
         size++;
     }              // add the point to the set (if it is not already in the set)
 
-    private Node insert(Node node, Point2D point, Orientations orientation) {
+    private Node insert(Node node, Point2D point, RectHV rect,Orientations orientation) {
         if (node == null) {
             Node tempNode = new Node();
             tempNode.p = point;
-//            tempNode.rect=???
+            tempNode.rect = rect;
             return tempNode;
         }
         switch (orientation) {
             case compareX:
                 Comparator<Point2D> cmpX = Point2D.X_ORDER;
                 int compX = cmpX.compare(point, node.p);
-                if (compX < 0) node.left = insert(node.left, point, Orientations.compareY);
-                else if (compX >= 0) node.right = insert(node.right, point, Orientations.compareY);
+                if (compX < 0) {
+                    RectHV rectangle = new RectHV(rect.xmin(), rect.ymin(), node.p.x(), rect.ymax());
+                    node.left = insert(node.left, point, rectangle, Orientations.compareY);
+                }
+
+                else if (compX >= 0) {
+                    RectHV rectangle = new RectHV(node.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
+                    node.right = insert(node.right, point, rectangle, Orientations.compareY);
+                }
                 break;
             case compareY:
                 Comparator<Point2D> cmpY = Point2D.Y_ORDER;
                 int compY = cmpY.compare(point, node.p);
-                if (compY < 0) node.left = insert(node.left, point, Orientations.compareX);
-                else if (compY >= 0) node.right = insert(node.right, point, Orientations.compareX);
+                if (compY < 0){
+                    RectHV rectangle = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), node.p.y());
+                    node.left = insert(node.left, point,rectangle,Orientations.compareX);
+                }
+                else if (compY >= 0) {
+                    RectHV rectangle = new RectHV(rect.xmin(), node.p.y(), rect.xmax(), rect.ymax());
+                    node.right = insert(node.right, point,rectangle, Orientations.compareX);
+                }
                 break;
         }
         return node;
