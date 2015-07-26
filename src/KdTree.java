@@ -1,12 +1,10 @@
-import org.w3c.dom.css.Rect;
-
 import java.util.Comparator;
 
 public class KdTree {
+    private final double POINT_SIZE = 0.01;
 
     private int size;
     private Node root;
-    private boolean compareX;
 
     private enum Orientations {
         compareX, compareY,
@@ -22,7 +20,6 @@ public class KdTree {
     public KdTree() {
         size = 0;
         root = null;
-        compareX = true;
     } // construct an empty set of points
 
     public boolean isEmpty() {
@@ -109,11 +106,18 @@ public class KdTree {
     }
 
     public void draw() {
-//        StdDraw.setPenColor(StdDraw.BLACK);
-//        StdDraw.setPenRadius(POINT_SIZE);
-//        for (Point2D p : points)
-//            StdDraw.point(p.x(),p.y());
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(POINT_SIZE);
+        drawPoint(root);//recursively draw points inOrder
     }                         // draw all points to standard draw
+
+    private void drawPoint(Node node) {
+        if (node != null) {
+            drawPoint(node.left);
+            node.p.draw();
+            drawPoint(node.right);
+        }
+    }
 
     public Iterable<Point2D> range(RectHV rect) {
         return null;
@@ -156,6 +160,7 @@ public class KdTree {
         System.out.println("Insert (.2,.3):");
         drawPoints.insert(new Point2D(.2,.3));
         System.out.println("The size is(should be 5): " + drawPoints.size());
+
 
 
 //
