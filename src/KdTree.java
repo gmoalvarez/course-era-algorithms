@@ -6,15 +6,15 @@ public class KdTree {
     private Node root;
     private boolean compareX;
 
-    private enum Orientation {
+    private enum Orientations {
         compareX, compareY,
     }
 
     private static class Node {
         private Point2D p;      // the point
         private RectHV rect;    // the axis-aligned rectangle corresponding to this node
-        private Node lb;        // the left/bottom subtree
-        private Node rt;        // the right/top subtree
+        private Node left;        // the left/bottom subtree
+        private Node right;        // the right/top subtree
     }
 
     public KdTree() {
@@ -33,33 +33,31 @@ public class KdTree {
 
     public void insert(Point2D p) {
         checkForNullArgument(p);
-        root = insert(root, p, Orientation.compareX);
+        if (contains(p))
+            return;
+        root = insert(root, p, Orientations.compareX);
         size++;
     }              // add the point to the set (if it is not already in the set)
 
-    private Node insert(Node node, Point2D point, Orientation orientation) {
+    private Node insert(Node node, Point2D point, Orientations orientation) {
         if (node == null) {
             Node tempNode = new Node();
             tempNode.p = point;
 //            tempNode.rect=???
             return tempNode;
         }
-//        if (node.p.equals(point)) {
-//            StdOut.println("Attempting to insert equal point, return");
-//            return null;
-//        }
         switch (orientation) {
             case compareX:
                 Comparator<Point2D> cmpX = Point2D.X_ORDER;
                 int compX = cmpX.compare(point, node.p);
-                if (compX < 0) node.lb = insert(node.lb, point, Orientation.compareY);
-                else if (compX >= 0) node.rt = insert(node.rt, point, Orientation.compareY);
+                if (compX < 0) node.left = insert(node.left, point, Orientations.compareY);
+                else if (compX >= 0) node.right = insert(node.right, point, Orientations.compareY);
                 break;
             case compareY:
                 Comparator<Point2D> cmpY = Point2D.Y_ORDER;
                 int compY = cmpY.compare(point, node.p);
-                if (compY < 0) node.lb = insert(node.lb, point, Orientation.compareX);
-                else if (compY >= 0) node.rt = insert(node.rt, point, Orientation.compareX);
+                if (compY < 0) node.left = insert(node.left, point, Orientations.compareX);
+                else if (compY >= 0) node.right = insert(node.right, point, Orientations.compareX);
                 break;
         }
         return node;
@@ -67,9 +65,32 @@ public class KdTree {
 
     public boolean contains(Point2D p) {
         checkForNullArgument(p);
-
-        return false;
+        return contains(root, p, Orientations.compareX);
     }            // does the set contain point p?
+
+    private boolean contains(Node node, Point2D point, Orientations orientation) {
+        if(node == null)
+            return false;
+        if (node.p.equals(point))
+            return true;
+
+        boolean found = false;
+        switch (orientation) {
+            case compareX:
+                Comparator<Point2D> cmpX = Point2D.X_ORDER;
+                int compX = cmpX.compare(point, node.p);
+                if (compX < 0) found = contains(node.left, point, Orientations.compareY);
+                else if (compX >= 0) found = contains(node.right, point, Orientations.compareY);
+                break;
+            case compareY:
+                Comparator<Point2D> cmpY = Point2D.Y_ORDER;
+                int compY = cmpY.compare(point, node.p);
+                if (compY < 0) found = contains(node.left, point, Orientations.compareX);
+                else if (compY >= 0) found = contains(node.right, point, Orientations.compareX);
+                break;
+        }
+        return found;
+    }
 
     public void draw() {
 //        StdDraw.setPenColor(StdDraw.BLACK);
@@ -93,8 +114,8 @@ public class KdTree {
     public static void main(String[] args) {
         int N = 5;
 
-        double[] xValues = {.1, .4, .6, .3, .2};
-        double[] yValues = {.5, .4, .2, .7, .1};
+        double[] xValues = {.7, .5, .2, .4, .9};
+        double[] yValues = {.2, .4, .3, .7, .6};
 
         Point2D[] arrayOfPoints = new Point2D[N];
         for (int i = 0; i < N; i++) {
@@ -106,14 +127,21 @@ public class KdTree {
             System.out.println(arrayOfPoints[i]);
             drawPoints.insert(arrayOfPoints[i]);
         }
-        System.out.println("The size is(should be 20): " + drawPoints.size());
+        System.out.println("The size is(should be 5): " + drawPoints.size());
         System.out.println("Is the set empty? (should be false):" + drawPoints.isEmpty());
-        System.out.println("Does the set contain (0.43212,0.121)? (probably false):"
-                + drawPoints.contains(new Point2D(0.43212, 0.121)));
-        System.out.println("Does the set contain (.6,.2) (should be true):"
-                + drawPoints.contains(new Point2D(.6,.2)));
+        System.out.println("Does the set contain (0.21, 0.11)? (should be false): "
+                + drawPoints.contains(new Point2D(0.21, 0.11)));
+        System.out.println("Does the set contain (.2,.3) (should be true): "
+                + drawPoints.contains(new Point2D(.2,.3)));
         System.out.println("Draw points");
         drawPoints.draw();
+
+        System.out.println("Try to insert duplicate");
+        System.out.println("Insert (.2,.3):");
+        drawPoints.insert(new Point2D(.2,.3));
+        System.out.println("The size is(should be 5): " + drawPoints.size());
+
+
 //
 //        //Create a new rectangle and test range()
 //        RectHV rectangle = new RectHV(0.1, 0.4, 0.5, 0.7);
