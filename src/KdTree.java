@@ -1,4 +1,5 @@
 import java.util.Comparator;
+import java.util.LinkedList;
 
 public class KdTree {
     private final double POINT_SIZE = 0.01;
@@ -15,6 +16,18 @@ public class KdTree {
         private RectHV rect;    // the axis-aligned rectangle corresponding to this node
         private Node left;        // the left/bottom subtree
         private Node right;        // the right/top subtree
+
+        private Node(Point2D p, RectHV rect, Node left, Node right) {
+            this.p = p;
+            this.rect = rect;
+            this.left = left;
+            this.right = right;
+        }
+        private Node(Point2D p, RectHV rect) {
+            this.p = p;
+            this.rect = rect;
+        }
+
     }
 
     public KdTree() {
@@ -41,9 +54,7 @@ public class KdTree {
 
     private Node insert(Node node, Point2D point, RectHV rect,Orientations orientation) {
         if (node == null) {
-            Node tempNode = new Node();
-            tempNode.p = point;
-            tempNode.rect = rect;
+            Node tempNode = new Node(point, rect);
             return tempNode;
         }
         switch (orientation) {
@@ -108,6 +119,7 @@ public class KdTree {
     public void draw() {
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(POINT_SIZE);
+        boolean vertical = true;
         drawPoint(root);//recursively draw points inOrder
     }                         // draw all points to standard draw
 
@@ -120,8 +132,30 @@ public class KdTree {
     }
 
     public Iterable<Point2D> range(RectHV rect) {
-        return null;
+        Queue<Point2D> pointsInRange = new Queue<>();
+        if(isEmpty()) return pointsInRange;
+        addPointsTo(pointsInRange, rect, root);
+        return pointsInRange;
     }             // all points that are inside the rectangle
+
+    private void addPointsTo(Queue<Point2D> points, RectHV that, Node node) {
+        if (pointIsInRectangle(node.p,that))
+            points.enqueue(node.p);
+        if (node.left != null && node.left.rect.intersects(that))
+            addPointsTo(points, that, node.left);
+        if (node.right != null && node.right.rect.intersects(that))
+            addPointsTo(points,that,node.right);
+    }
+
+    private boolean pointIsInRectangle(Point2D p, RectHV rect) {
+        if (p.x() >= rect.xmin() &&
+                p.x() <= rect.xmax() &&
+                p.y() >= rect.ymin() &&
+                p.y() <= rect.ymax()) {
+            return true;
+        }
+        return false;
+    }
 
     public Point2D nearest(Point2D p) {
         return null;
@@ -161,15 +195,13 @@ public class KdTree {
         drawPoints.insert(new Point2D(.2,.3));
         System.out.println("The size is(should be 5): " + drawPoints.size());
 
-
-
-//
-//        //Create a new rectangle and test range()
-//        RectHV rectangle = new RectHV(0.1, 0.4, 0.5, 0.7);
-//        System.out.println("The points in the rectangle " + rectangle + " are:");
-//        for (Point2D p : drawPoints.range(rectangle))
-//            System.out.println(p);
-//        rectangle.draw();
+        //Create a new rectangle and test range()
+        RectHV rectangle = new RectHV(0.0, 0.0, .3, .4);
+        System.out.println("The points in the rectangle " + rectangle + " are:");
+        Iterable<Point2D> pointsInRectangle =drawPoints.range(rectangle);
+        for (Point2D p : pointsInRectangle)
+            System.out.println(p);
+        rectangle.draw();
 //
 //        //Find the point closest to (0.1,0.1)
 //        Point2D testNearest = new Point2D(0.1, 0.1);
