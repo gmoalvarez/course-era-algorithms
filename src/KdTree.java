@@ -2,6 +2,7 @@ import java.util.Comparator;
 
 public class KdTree {
     private final double POINT_SIZE = 0.01;
+    private final RectHV UNIT_RECT = new RectHV(0, 0, 1, 1);
 
     private int size;
     private Node root;
@@ -46,8 +47,7 @@ public class KdTree {
         checkForNullArgument(p);
         if (contains(p))
             return;
-        RectHV unitRect = new RectHV(0, 0, 1, 1);
-        root = insert(root, p, unitRect,Orientations.compareX);
+        root = insert(root, p, UNIT_RECT,Orientations.compareX);
         size++;
     }              // add the point to the set (if it is not already in the set)
 
@@ -64,7 +64,6 @@ public class KdTree {
                     RectHV rectangle = new RectHV(rect.xmin(), rect.ymin(), node.p.x(), rect.ymax());
                     node.left = insert(node.left, point, rectangle, Orientations.compareY);
                 }
-
                 else if (compX >= 0) {
                     RectHV rectangle = new RectHV(node.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
                     node.right = insert(node.right, point, rectangle, Orientations.compareY);
@@ -118,15 +117,36 @@ public class KdTree {
     public void draw() {
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(POINT_SIZE);
-        boolean vertical = true;
-        drawPoint(root);//recursively draw points inOrder
+        draw(root);//recursively draw points inOrder
+        drawRectangles(root, Orientations.compareX);
     }                         // draw all points to standard draw
 
-    private void drawPoint(Node node) {
+    private void drawRectangles(Node node, Orientations orientation) {
         if (node != null) {
-            drawPoint(node.left);
+            switch (orientation) {
+                case compareX:
+                    StdDraw.setPenColor(StdDraw.RED);
+                    StdDraw.setPenRadius();
+                    StdDraw.line(node.p.x(), node.rect.ymin(), node.p.x(), node.rect.ymax());
+                    drawRectangles(node.left,Orientations.compareY);
+                    drawRectangles(node.right,Orientations.compareY);
+                    break;
+                case compareY:
+                    StdDraw.setPenColor(StdDraw.BLUE);
+                    StdDraw.setPenRadius();
+                    StdDraw.line(node.rect.xmin(), node.p.y(), node.rect.xmax(), node.p.y());
+                    drawRectangles(node.left,Orientations.compareX);
+                    drawRectangles(node.right,Orientations.compareX);
+                    break;
+            }
+        }
+    }
+
+    private void draw(Node node) {
+        if (node != null) {
+            draw(node.left);
             node.p.draw();
-            drawPoint(node.right);
+            draw(node.right);
         }
     }
 
