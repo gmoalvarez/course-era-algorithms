@@ -1,5 +1,4 @@
 import java.util.Comparator;
-import java.util.LinkedList;
 
 public class KdTree {
     private final double POINT_SIZE = 0.01;
@@ -132,11 +131,14 @@ public class KdTree {
     }
 
     public Iterable<Point2D> range(RectHV rect) {
+        checkForNullArgument(rect);
         Queue<Point2D> pointsInRange = new Queue<>();
-        if(isEmpty()) return pointsInRange;
+        if (isEmpty()) return pointsInRange;
         addPointsTo(pointsInRange, rect, root);
         return pointsInRange;
     }             // all points that are inside the rectangle
+
+
 
     private void addPointsTo(Queue<Point2D> points, RectHV that, Node node) {
         if (pointIsInRectangle(node.p,that))
@@ -158,11 +160,39 @@ public class KdTree {
     }
 
     public Point2D nearest(Point2D p) {
-        return null;
+        checkForNullArgument(p);
+        return nearest(root, p, root.p);
     }             // a nearest neighbor in the set to point p; null if the set is empty
+
+    private Point2D nearest(Node n, Point2D p, Point2D best) {
+        if (n== null)
+            return best;
+
+        Point2D min = best;
+        double dst = p.distanceSquaredTo(best);
+        if(dst < n.rect.distanceSquaredTo(p))//don't explore if node distance is greater than best so far
+            return best;
+        if(dst > n.p.distanceSquaredTo(p))
+            min = n.p;
+        if (n.left != null && n.left.rect.contains(p)) {
+            min = nearest(n.left, p, min);
+            min = nearest(n.right, p, min);
+        } else if (n.right != null && n.right.rect.contains(p)) {
+            min = nearest(n.right, p, min);
+            min = nearest(n.left, p, min);
+        } else {
+            min = nearest(n.left, p, min);
+            min = nearest(n.right, p, min);
+        }
+        return min;
+    }
 
     private void checkForNullArgument(Point2D p) {
         if (p == null) throw new NullPointerException("Argument cannot be null");
+    }
+
+    private void checkForNullArgument(RectHV rect) {
+        if (rect == null) throw new NullPointerException("Argument cannot be null");
     }
 
     public static void main(String[] args) {
@@ -202,18 +232,18 @@ public class KdTree {
         for (Point2D p : pointsInRectangle)
             System.out.println(p);
         rectangle.draw();
-//
-//        //Find the point closest to (0.1,0.1)
-//        Point2D testNearest = new Point2D(0.1, 0.1);
-//        Point2D nearestPoint = drawPoints.nearest(testNearest);
-//        System.out.println("Find the point closest to (0.1,0.1)");
-//        System.out.println(nearestPoint);
-//        StdDraw.setPenColor(StdDraw.RED);
-//        StdDraw.setPenRadius(0.01);
-//        StdDraw.point(testNearest.x(),testNearest.y());
-//        StdDraw.setPenColor(StdDraw.BLUE);
-//        StdDraw.setPenRadius(0.03);
-//        StdDraw.point(nearestPoint.x(),nearestPoint.y());
+
+        //Find the point closest to (0.1,0.1)
+        Point2D testNearest = new Point2D(0.1, 0.1);
+        Point2D nearestPoint = drawPoints.nearest(testNearest);
+        System.out.println("Find the point closest to (0.1,0.1)");
+        System.out.println(nearestPoint);
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.setPenRadius(0.01);
+        StdDraw.point(testNearest.x(),testNearest.y());
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.setPenRadius(0.03);
+        StdDraw.point(nearestPoint.x(),nearestPoint.y());
 
     } // unit testing of the methods (optional)
 }
